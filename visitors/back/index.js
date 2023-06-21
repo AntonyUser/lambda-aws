@@ -17,10 +17,10 @@ const dynamoDbClient = DynamoDBDocumentClient.from(client);
 
 app.use(express.json());
 
-aapp.post("/visitors", async function (req, res) {
-  const { visitorId, name } = req.body;
-  if (typeof visitorId !== "string") {
-    res.status(400).json({ error: '"visitorId" must be a string' });
+app.post("/visitors", async function (req, res) {
+  const { userId, name } = req.body;
+  if (typeof userId !== "string") {
+    res.status(400).json({ error: '"userId" must be a string' });
   } else if (typeof name !== "string") {
     res.status(400).json({ error: '"name" must be a string' });
   }
@@ -28,14 +28,14 @@ aapp.post("/visitors", async function (req, res) {
   const params = {
     TableName: USERS_TABLE,
     Item: {
-      visitorId: visitorId,
+      userId: userId,
       name: name,
     },
   };
 
   try {
     await dynamoDbClient.send(new PutCommand(params));
-    res.json({ visitorId, name });
+    res.json({ userId, name });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Could not create visitor" });
@@ -60,23 +60,23 @@ app.get("/visitors", async function (req, res) {
   }
 });
 
-app.get("/visitors/:visitorId", async function (req, res) {
+app.get("/visitors/:userId", async function (req, res) {
   const params = {
     TableName: USERS_TABLE,
     Key: {
-      visitorId: req.params.visitorId,
+      userId: req.params.userId,
     },
   };
 
   try {
     const { Item } = await dynamoDbClient.send(new GetCommand(params));
     if (Item) {
-      const { visitorId, name } = Item;
-      res.json({ visitorId, name });
+      const { userId, name } = Item;
+      res.json({ userId, name });
     } else {
       res
         .status(404)
-        .json({ error: 'Could not find visitor with provided "visitorId"' });
+        .json({ error: 'Could not find visitor with provided "userId"' });
     }
   } catch (error) {
     console.log(error);
@@ -84,11 +84,11 @@ app.get("/visitors/:visitorId", async function (req, res) {
   }
 });
 
-app.patch("/visitors/:visitorId", async function (req, res) {
-  const { visitorId } = req.params;
+app.patch("/visitors/:userId", async function (req, res) {
+  const { userId } = req.params;
   const { newName } = req.body;
-  if (typeof visitorId !== "string") {
-    res.status(400).json({ error: '"visitorId" must be a string' });
+  if (typeof userId !== "string") {
+    res.status(400).json({ error: '"userId" must be a string' });
   } else if (typeof newName !== "string") {
     res.status(400).json({ error: '"newName" must be a string' });
   }
@@ -96,7 +96,7 @@ app.patch("/visitors/:visitorId", async function (req, res) {
   const params = {
     TableName: USERS_TABLE,
     Item: {
-      visitorId: visitorId,
+      userId: userId,
       name: newName,
     },
   };
@@ -104,8 +104,8 @@ app.patch("/visitors/:visitorId", async function (req, res) {
   try {
     const { Item } = await dynamoDbClient.send(new UpdateItemCommand(params));
     if (Item) {
-      const { visitorId, name } = Item;
-      res.json({ visitorId, name });
+      const { userId, name } = Item;
+      res.json({ userId, name });
     } else {
       res
         .status(404)
@@ -117,16 +117,16 @@ app.patch("/visitors/:visitorId", async function (req, res) {
   }
 });
 
-app.delete("/visitors/:visitorId", async function (req, res) {
-  const { visitorId } = req.params;
-  if (typeof visitorId !== "string") {
-    res.status(400).json({ error: '"visitorId" must be a string' });
+app.delete("/visitors/:userId", async function (req, res) {
+  const { userId } = req.params;
+  if (typeof userId !== "string") {
+    res.status(400).json({ error: '"userId" must be a string' });
   }
 
   const params = {
     TableName: USERS_TABLE,
     Item: {
-      visitorId: visitorId,
+      userId: userId,
     },
   };
 
@@ -139,7 +139,7 @@ app.delete("/visitors/:visitorId", async function (req, res) {
     } else {
       res
         .status(404)
-        .json({ error: 'Could not find visitor with provided "visitorId"' });
+        .json({ error: 'Could not find visitor with provided "userId"' });
     }
   } catch (error) {
     console.log(error);
