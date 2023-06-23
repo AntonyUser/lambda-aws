@@ -1,6 +1,7 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
+  ScanCommand,
   GetCommand,
   PutCommand,
   UpdateItemCommand,
@@ -51,7 +52,8 @@ app.get("/visitors", async function (req, res) {
   };
 
   try {
-    const { Items } = await dynamoDbClient.send(new GetCommand(params));
+    const { Items } = await dynamoDbClient.send(new ScanCommand(params));
+    console.log(Items);
     if (Items) {
       res.json({ Items });
     } else {
