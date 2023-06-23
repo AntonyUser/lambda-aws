@@ -8,8 +8,11 @@ const {
 } = require("@aws-sdk/lib-dynamodb");
 const express = require("express");
 const serverless = require("serverless-http");
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
+app.use(express.urlencoded({ extended: false }));
 
 const USERS_TABLE = process.env.USERS_TABLE;
 const client = new DynamoDBClient();
