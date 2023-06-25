@@ -97,8 +97,13 @@ app.post("/visitors/:userId", async function (req, res) {
   } else if (typeof newName !== "string") {
     res.status(400).json({ error: '"newName" must be a string' });
   }
-
   const params = {
+    TableName: USERS_TABLE,
+    Key: {
+      userId: userId,
+    },
+  };
+  const updateParams = {
     TableName: USERS_TABLE,
     Key: {
       userId: userId,
@@ -110,9 +115,12 @@ app.post("/visitors/:userId", async function (req, res) {
   };
 
   try {
-    const { Item } = await dynamoDbClient.send(new UpdateItemCommand(params));
+    const { Item } = await dynamoDbClient.send(new GetCommand(params));
 
     if (Item) {
+      const { Item } = await dynamoDbClient.send(
+        new UpdateItemCommand(updateParams)
+      );
       const { userId, name } = Item;
       res.json({ userId, name });
     } else {
