@@ -22,7 +22,7 @@ const dynamoDbClient = DynamoDBDocumentClient.from(client);
 app.use(express.json());
 
 app.post("/visitors", async function (req, res) {
-  const { userId, name } = req.body;
+  const { userId, name, lastName, time } = req.body;
   if (typeof userId !== "string") {
     res.status(400).json({ error: '"userId" must be a string' });
   } else if (typeof name !== "string") {
@@ -34,12 +34,14 @@ app.post("/visitors", async function (req, res) {
     Item: {
       userId: userId,
       name: name,
+      lastName: lastName,
+      time: time,
     },
   };
 
   try {
     await dynamoDbClient.send(new PutCommand(params));
-    res.json({ userId, name });
+    res.json({ userId, name, lastName, time });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Could not create visitor" });
@@ -76,8 +78,8 @@ app.get("/visitors/:userId", async function (req, res) {
   try {
     const { Item } = await dynamoDbClient.send(new GetCommand(params));
     if (Item) {
-      const { userId, name } = Item;
-      res.json({ userId, name });
+      const { userId, name, lastName, time } = Item;
+      res.json({ userId, name, lastName, time });
     } else {
       res
         .status(404)
@@ -89,7 +91,7 @@ app.get("/visitors/:userId", async function (req, res) {
   }
 });
 
-app.post("/visitors/:userId", async function (req, res) {
+app.patch("/visitors/:userId", async function (req, res) {
   const { userId } = req.params;
   const { newName } = req.body;
   if (typeof userId !== "string") {
@@ -146,12 +148,20 @@ app.delete("/visitors/:userId", async function (req, res) {
       userId: userId,
     },
   };
+  const deleteParams = {
+    TableName: USERS_TABLE,
+    Key: {
+      userId: userId,
+    },
+  };
 
   try {
     const { Item } = await dynamoDbClient.send(new GetCommand(params));
     if (Item) {
-      await dynamoDbClient.send(new DeleteItemCommand(params));
-      res.status(200).json({ message: "Visitor deleted" });
+      const response = await dynamoDbClient.send(
+        new DeleteItemCommand(deleteParams)
+      );
+      res.status(200).json({ message: "Visitor deleted", response });
     } else {
       res
         .status(404)
